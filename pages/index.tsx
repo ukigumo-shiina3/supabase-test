@@ -40,6 +40,23 @@ const Home: NextPage = () => {
   useEffect(() => {
     // supabaseからデータを取得
     fetchData();
+
+    // subscriptionを生成
+    const subscription = supabase
+      .from("sample")
+      // .onの第一引数には'INSERT'や'UPDATE'などアクションを限定して指定することも可能
+      .on("*", (payload) => {
+        fetchData();
+        console.log("Change received!", payload);
+      })
+      .subscribe();
+
+    return () => {
+      // アンマウント時にsubscriptionを解除
+      if (subscription) {
+        supabase.removeSubscription(subscription);
+      }
+    };
   }, []);
 
   if (loading) return <div>loading...</div>;
